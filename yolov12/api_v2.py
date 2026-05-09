@@ -363,6 +363,7 @@ def first_existing_path(*paths: Path) -> Optional[Path]:
 
 
 DEFAULT_CBAM_MODEL_PATH = first_existing_path(
+    BASE_DIR / "runs" / "detect" / "train4" / "weights" / "best_clean.pt",
     BASE_DIR / "runs" / "detect" / "train4" / "weights" / "best.pt",
 )
 DEFAULT_ECA_MODEL_PATH = first_existing_path(
@@ -1085,6 +1086,8 @@ async def health_check():
             "loaded": cbam_model_manager.is_loaded,
             "device": cbam_model_manager.device,
             "num_classes": len(cbam_model_manager.class_names),
+            "path": cbam_model_manager.model_path,
+            "load_error": cbam_model_manager.load_error,
         }
     
     if eca_model_manager:
@@ -1092,6 +1095,8 @@ async def health_check():
             "loaded": eca_model_manager.is_loaded,
             "device": eca_model_manager.device,
             "num_classes": len(eca_model_manager.class_names),
+            "path": eca_model_manager.model_path,
+            "load_error": eca_model_manager.load_error,
         }
     
     all_loaded = (cbam_model_manager and cbam_model_manager.is_loaded) or (eca_model_manager and eca_model_manager.is_loaded)
