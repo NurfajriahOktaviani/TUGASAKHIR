@@ -276,10 +276,15 @@ def patch_ultralytics_attention_forward() -> None:
         logging.getLogger(__name__).warning(f"Gagal patch Ultralytics AAttn: {e}")
         return
 
-    if getattr(yolo_block.AAttn, "_legacy_qk_compat", False):
+    yolo_aattn = getattr(yolo_block, "AAttn", None)
+    if yolo_aattn is None:
+        logging.getLogger(__name__).warning("Ultralytics AAttn tidak tersedia; patch kompatibilitas dilewati")
         return
 
-    original_forward = yolo_block.AAttn.forward
+    if getattr(yolo_aattn, "_legacy_qk_compat", False):
+        return
+
+    original_forward = yolo_aattn.forward
 
     def legacy_compatible_forward(self, x):
         if "qkv" in self._modules:
@@ -317,8 +322,8 @@ def patch_ultralytics_attention_forward() -> None:
         x = x.reshape(b, h, w, c).permute(0, 3, 1, 2)
         return self.proj(x + pp)
 
-    yolo_block.AAttn.forward = legacy_compatible_forward
-    yolo_block.AAttn._legacy_qk_compat = True
+    yolo_aattn.forward = legacy_compatible_forward
+    yolo_aattn._legacy_qk_compat = True
 
 
 patch_ultralytics_attention_forward()
